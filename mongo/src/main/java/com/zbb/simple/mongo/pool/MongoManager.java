@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bson.Document;
+import org.bson.conversions.Bson;
 
 import com.mongodb.CommandResult;
 import com.mongodb.DB;
@@ -46,6 +47,7 @@ public class MongoManager {
 	public MongoCollection<Document> getDBConnection(String tableName){
 		return db.getCollection(tableName);
 	}
+	
 	
 	private static void init() {
 		// TODO Auto-generated method stub
