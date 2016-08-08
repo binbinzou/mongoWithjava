@@ -1,25 +1,29 @@
 package com.zbb.simlpe.mongo.dto;
 
-import org.bson.Document;
 
-public class TUser extends Document{
+public class TUser extends BaseBean{
 
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 1L;
 	private String name ;
-	private String age;
+	private int age;
+	
+	public TUser(String name, int age) {
+		super();
+		this.name = name;
+		this.age = age;
+	}
 	public String getName() {
 		return name;
 	}
 	public void setName(String name) {
 		this.name = name;
 	}
-	public String getAge() {
+	public int getAge() {
 		return age;
 	}
-	public void setAge(String age) {
+	public void setAge(int age) {
 		this.age = age;
 	}
 	

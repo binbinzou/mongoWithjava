@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
+import org.bson.BSON;
 import org.bson.Document;
 import org.bson.codecs.Encoder;
 import org.bson.codecs.configuration.CodecRegistry;
@@ -14,9 +15,12 @@ import org.bson.conversions.Bson;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.JSONPObject;
 import com.mongodb.BasicDBObject;
+import com.mongodb.client.DistinctIterable;
+import com.mongodb.client.ListIndexesIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.CountOptions;
 import com.mongodb.client.model.DeleteManyModel;
+import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.FindOneAndDeleteOptions;
 import com.mongodb.client.model.FindOneAndReplaceOptions;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
@@ -180,7 +184,7 @@ public class MongoDao {
 		collection.insertOne(document);
 	}
 	
-	public void insetOneWithOptions(String tableName,Document document,boolean isValidation){
+	public void insertOneWithOptions(String tableName,Document document,boolean isValidation){
 		MongoCollection<Document> collection = manager.getDBConnection(tableName);
 		InsertOneOptions options = new InsertOneOptions();
 		options.bypassDocumentValidation(isValidation);
@@ -189,8 +193,8 @@ public class MongoDao {
 	
 	public long updateOne(String tableName,Map<String, Object> map,Document document){
 		MongoCollection<Document> collection = manager.getDBConnection(tableName);
-		Bson filter = new Document(map);
-		UpdateResult result = collection.updateOne(filter, document);
+		Bson bson = Filters.eq("qqq", (String)map.get("qqq"));
+		UpdateResult result = collection.updateOne(bson,document);
 		return result.getModifiedCount();
 	}
 	
@@ -248,6 +252,36 @@ public class MongoDao {
 		return collection.createIndex(keys, options);
 	}
 	
+	public void dropIndex(String tableName,Map<String, Object> map){
+		MongoCollection<Document> collection = manager.getDBConnection(tableName);
+		Bson bson = new Document(map);
+		collection.dropIndex(bson);
+	}
+	
+	public void dropIndex(String tableName,String indexName){
+		MongoCollection<Document> collection = manager.getDBConnection(tableName);
+		collection.dropIndex(indexName);
+	}
+
+	/**
+	 * 删除掉所有的索引。除了_id的索引
+	 * @param tableName
+	 */
+	public void dropIndexs(String tableName){
+		MongoCollection<Document> collection = manager.getDBConnection(tableName);
+		collection.dropIndexes();
+	}
+	
+	public ListIndexesIterable<Document> listIndexs(String tableName){
+		MongoCollection<Document> collection = manager.getDBConnection(tableName);
+		return collection.listIndexes();
+	}
+	
+	public ListIndexesIterable<Document> listIndexs(String tableName,Document document){
+		MongoCollection<Document> collection = manager.getDBConnection(tableName);
+		return (ListIndexesIterable<Document>) collection.listIndexes(document.getClass());
+	}
+	
 	public List<String> createIndexs(String tableName,Map<String, Integer> map){
 		MongoCollection<Document> collection = manager.getDBConnection(tableName);
 		Iterator<String> iterator = (Iterator) map.entrySet();
@@ -261,5 +295,17 @@ public class MongoDao {
 		}
 		return collection.createIndexes(indexes);
 	}
+	
+	public DistinctIterable<Document> distinct(String tableName,String key,Document document){
+		MongoCollection<Document> collection = manager.getDBConnection(tableName);
+		return (DistinctIterable<Document>) collection.distinct(key,document.getClass());
+	}
+	
+	public DistinctIterable<Document> distinct(String tableName,Map<String, Object> map,String key,Document document){
+		MongoCollection<Document> collection = manager.getDBConnection(tableName);
+		Bson bson = new Document(map);
+		return (DistinctIterable<Document>) collection.distinct(key,bson,document.getClass());
+	}
+
 	
 }
