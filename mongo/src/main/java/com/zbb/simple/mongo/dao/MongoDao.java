@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 import org.bson.BSON;
+import org.bson.BsonDocument;
 import org.bson.Document;
 import org.bson.codecs.Encoder;
 import org.bson.codecs.configuration.CodecRegistry;
@@ -73,10 +74,9 @@ public class MongoDao {
 		return jsonpObjects;
 	}
 	
-	public List<JSONObject> findWithFilter(String tableName,Map<String, Object> map){
+	public List<JSONObject> findWithFilter(String tableName,Bson filters){
 		MongoCollection<Document> collection = manager.getDBConnection(tableName);
-		Bson filter = new Document(map);
-		List<Document> documents = collection.find(filter).into(new ArrayList<Document>());
+		List<Document> documents = collection.find(filters).into(new ArrayList<Document>());
 		List<JSONObject> jsonpObjects = new ArrayList<JSONObject>();
 		for(Document document : documents){
 			String documentString = document.toJson();
@@ -86,9 +86,8 @@ public class MongoDao {
 		return jsonpObjects;
 	}
 	
-	public List<JSONObject> findWithFilterLimit(String tableName,Map<String, Object> map,int fromIndex,int toIndex){
+	public List<JSONObject> findWithFilterLimit(String tableName,Bson filter,int fromIndex,int toIndex){
 		MongoCollection<Document> collection = manager.getDBConnection(tableName);
-		Bson filter = new Document(map);
 		List<Document> documents = collection.find(filter).into(new ArrayList<Document>()).subList(fromIndex, toIndex);
 		List<JSONObject> jsonpObjects = new ArrayList<JSONObject>();
 		for(Document document : documents){
@@ -99,71 +98,60 @@ public class MongoDao {
 		return jsonpObjects;
 	}
 	
-	public List<Document> findWithFilterClass(String tableName,Map<String, Object> map, Document document){
+	public List<Document> findWithFilterClass(String tableName,Bson filter, Document document){
 		MongoCollection<Document> collection = manager.getDBConnection(tableName);
-		Bson filter = new Document(map);
 		List<Document> tUser = collection.find(document.getClass()).filter(filter).into(new ArrayList<Document>());
 		return tUser;
 	}
 	
-	public Document findOneAndDelete(String tableName,Map<String, Object> map){
+	public Document findOneAndDelete(String tableName,Bson filter){
 		MongoCollection<Document> collection = manager.getDBConnection(tableName);
-		Bson filter = new Document(map);
 		Document document = collection.findOneAndDelete(filter);
 		return document;
 	}
 	
-	public Document findOneAndDeleteWithOptions(String tableName,Map<String, Object> map){
+	public Document findOneAndDeleteWithOptions(String tableName,Bson filter){
 		MongoCollection<Document> collection = manager.getDBConnection(tableName);
-		Bson filter = new Document(map);
 		FindOneAndDeleteOptions options = new FindOneAndDeleteOptions();
 		Document document = collection.findOneAndDelete(filter,options);
 		return document;
 	}
 	
-	public Document findOneAndReplace(String tableName,Map<String, Object> map,Document replacement){
+	public Document findOneAndReplace(String tableName,Bson filter,Document replacement){
 		MongoCollection<Document> collection = manager.getDBConnection(tableName);
-		Bson filter = new Document(map);
 		Document document = collection.findOneAndReplace(filter, replacement);
 		return document;
 	}
 	
-	public Document findOneAndReplaceOptions(String tableName,Map<String, Object> map,Document replacement){
+	public Document findOneAndReplaceOptions(String tableName,Bson filter,Document replacement){
 		MongoCollection<Document> collection = manager.getDBConnection(tableName);
-		Bson filter = new Document(map);
 		FindOneAndReplaceOptions options = new FindOneAndReplaceOptions();
 		Document document = collection.findOneAndReplace(filter, replacement,options);
 		return document;
 	}
 	
-	public Document findOneAndUpdate(String tableName,Map<String, Object> map,Document replacement){
+	public Document findOneAndUpdate(String tableName,Bson filter,Bson bson){
 		MongoCollection<Document> collection = manager.getDBConnection(tableName);
-		Bson filter = new Document(map);
-		Bson bson = replacement;
 		Document document = collection.findOneAndUpdate(filter, bson);
 		return document;
 	}
 	
-	public Document findOneAndUpdateWithOptions(String tableName,Map<String, Object> map,Document replacement){
+	public Document findOneAndUpdateWithOptions(String tableName,Bson filter,BsonDocument bson){
 		MongoCollection<Document> collection = manager.getDBConnection(tableName);
-		Bson filter = new Document(map);
-		Bson bson = replacement;
 		FindOneAndUpdateOptions options = new FindOneAndUpdateOptions();
 		Document document = collection.findOneAndUpdate(filter, bson, options);
 		return document;
 	}
 	
-	public long deleteOne(String tableName,Map<String, Object> map){
+	public long deleteOne(String tableName,Bson filter){
 		MongoCollection<Document> collection = manager.getDBConnection(tableName);
-		Bson bson = new Document(map);
-		DeleteResult result = collection.deleteOne(bson);
+		DeleteResult result = collection.deleteOne(filter);
 		return result.getDeletedCount();
 	}
 	
-	public long deleteMany(String tableName,Map<String, Object> map){
+	public long deleteMany(String tableName,Bson filter){
 		MongoCollection<Document> collection = manager.getDBConnection(tableName);
-		Bson bson = new Document(map);
-		DeleteResult result = collection.deleteMany(bson);
+		DeleteResult result = collection.deleteMany(filter);
 		return result.getDeletedCount();
 	}
 	
@@ -191,31 +179,27 @@ public class MongoDao {
 		collection.insertOne(document, options);
 	}
 	
-	public long updateOne(String tableName,Map<String, Object> map,Document document){
+	public long updateOne(String tableName,Bson filter,Bson update){
 		MongoCollection<Document> collection = manager.getDBConnection(tableName);
-		Bson bson = Filters.eq("qqq", (String)map.get("qqq"));
-		UpdateResult result = collection.updateOne(bson,document);
+		UpdateResult result = collection.updateOne(filter,update);
 		return result.getModifiedCount();
 	}
 	
-	public long updateOneWithOptions(String tableName,Map<String, Object> map,Document document){
+	public long updateOneWithOptions(String tableName,Bson filter,Bson update){
 		MongoCollection<Document> collection = manager.getDBConnection(tableName);
-		Bson filter = new Document(map);
 		UpdateOptions options = new UpdateOptions();
-		UpdateResult result = collection.updateOne(filter, document,options);
+		UpdateResult result = collection.updateOne(filter, update,options);
 		return result.getModifiedCount();
 	}
 	
-	public long updateMany(String tableName,Map<String, Object> map,Document document){
+	public long updateMany(String tableName,Bson filter,Bson update){
 		MongoCollection<Document> collection = manager.getDBConnection(tableName);
-		Bson filter = new Document(map);
-		UpdateResult result = collection.updateMany(filter, document);
+		UpdateResult result = collection.updateMany(filter, update);
 		return result.getModifiedCount();
 	}
 	
-	public long updateManyWithOptions(String tableName,Map<String, Object> map,Document document){
+	public long updateManyWithOptions(String tableName,Bson filter,Document document){
 		MongoCollection<Document> collection = manager.getDBConnection(tableName);
-		Bson filter = new Document(map);
 		UpdateOptions options = new UpdateOptions();
 		UpdateResult result = collection.updateMany(filter, document,options);
 		return result.getModifiedCount();
@@ -226,36 +210,31 @@ public class MongoDao {
 		return collection.count();
 	}
 	
-	public long count(String tableName,Map<String, Object> map){
+	public long count(String tableName,Bson filter){
 		MongoCollection<Document> collection = manager.getDBConnection(tableName);
-		Bson filter = new Document(map);
 		return collection.count(filter);
 	}
 	
-	public long countWithOptions(String tableName,Map<String, Object> map){
+	public long countWithOptions(String tableName,Bson filter){
 		MongoCollection<Document> collection = manager.getDBConnection(tableName);
-		Bson filter = new Document(map);
 		CountOptions options = new CountOptions();
 		return collection.count(filter,options);
 	}
 	
-	public String createIndex(String tableName,String key,int sort){
+	public String createIndex(String tableName,Bson index){
 		MongoCollection<Document> collection = manager.getDBConnection(tableName);
-		Bson keys = new Document(key,sort);
-		return collection.createIndex(keys);
+		return collection.createIndex(index);
 	}
 	
-	public String createIndexWithOption(String tableName,String key,int sort){
+	public String createIndexWithOption(String tableName,Bson index){
 		MongoCollection<Document> collection = manager.getDBConnection(tableName);
-		Bson keys = new Document(key,sort);
 		IndexOptions options = new IndexOptions();
-		return collection.createIndex(keys, options);
+		return collection.createIndex(index, options);
 	}
 	
-	public void dropIndex(String tableName,Map<String, Object> map){
+	public void dropIndex(String tableName,Bson index){
 		MongoCollection<Document> collection = manager.getDBConnection(tableName);
-		Bson bson = new Document(map);
-		collection.dropIndex(bson);
+		collection.dropIndex(index);
 	}
 	
 	public void dropIndex(String tableName,String indexName){
@@ -282,29 +261,25 @@ public class MongoDao {
 		return (ListIndexesIterable<Document>) collection.listIndexes(document.getClass());
 	}
 	
-	public List<String> createIndexs(String tableName,Map<String, Integer> map){
+	public List<String> createIndexs(String tableName,List<Bson> indexs){
 		MongoCollection<Document> collection = manager.getDBConnection(tableName);
-		Iterator<String> iterator = (Iterator) map.entrySet();
 		List<IndexModel> indexes = new ArrayList<IndexModel>();
 		IndexOptions options = new IndexOptions();
-		while (iterator.hasNext()) {
-			String key = (String) iterator.next();
-			Bson bson = new Document(key,map.get(key));
-			IndexModel indexModel = new IndexModel(bson,options);
+		for(Bson index:indexs){
+			IndexModel indexModel = new IndexModel(index,options);
 			indexes.add(indexModel);
 		}
 		return collection.createIndexes(indexes);
 	}
 	
-	public DistinctIterable<Document> distinct(String tableName,String key,Document document){
+	public DistinctIterable<String> distinct(String tableName,String key,Class<String> class1){
 		MongoCollection<Document> collection = manager.getDBConnection(tableName);
-		return (DistinctIterable<Document>) collection.distinct(key,document.getClass());
+		return (DistinctIterable<String>) collection.distinct(key,class1);
 	}
 	
-	public DistinctIterable<Document> distinct(String tableName,Map<String, Object> map,String key,Document document){
+	public DistinctIterable<Document> distinct(String tableName,Bson filter,String key,Class<Document> class1){
 		MongoCollection<Document> collection = manager.getDBConnection(tableName);
-		Bson bson = new Document(map);
-		return (DistinctIterable<Document>) collection.distinct(key,bson,document.getClass());
+		return (DistinctIterable<Document>) collection.distinct(key,filter,class1);
 	}
 
 	
